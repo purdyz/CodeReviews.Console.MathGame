@@ -1,4 +1,6 @@
-﻿Console.WriteLine("Welcome to the Math Game!");
+﻿using System.Diagnostics;
+
+Console.WriteLine("Welcome to the Math Game!");
 Console.Write("What's your name? ");
 string playerName = Console.ReadLine();
 Console.WriteLine($"Nice to meet you, {playerName}!");
@@ -75,25 +77,27 @@ void GameSelection()
 
 void PlayRound(string operation, char operand)
 {
-    Random random = new Random();
+    int difficulty = ChooseDifficulty();
     int count = 1;
     int score = 0;
     int randomNum;
     int randomNum2;
     int product;
     int result;
+    Stopwatch timer = new Stopwatch();
 
     while (count < 6)
     {
-        randomNum = random.Next(1, 11);
-        randomNum2 = random.Next(1, 11);
+        randomNum = GenerateRandomNumber(difficulty);
+        randomNum2 = GenerateRandomNumber(difficulty);
 
         if (operation == "Division")
-            randomNum = randomNum * randomNum2;
+            randomNum = CalculateResult("Multiplication", randomNum, randomNum2);
 
         result = CalculateResult(operation, randomNum, randomNum2);
 
         Console.WriteLine($"Question {count}! What is {randomNum} {operand} {randomNum2}?");
+        timer.Start();
         string answer = Console.ReadLine();
         Console.WriteLine($"Your answer is {answer}");
 
@@ -113,11 +117,56 @@ void PlayRound(string operation, char operand)
         count++;
     }
 
+    timer.Stop();
+
     GameResult currentResult = new GameResult();
     currentResult.GameType = operation;
     currentResult.Score = score;
+    currentResult.Difficulty = difficulty;
+    currentResult.Time = timer.Elapsed;
     history.Add(currentResult);
-    Console.WriteLine($"Your final score is {score}!");
+    Console.WriteLine($"Your final score is {score}! It took you {currentResult.Time}!");
+}
+
+static int ChooseDifficulty()
+{
+    Console.WriteLine("Choose a difficulty level");
+    Console.WriteLine("1. Easy");
+    Console.WriteLine("2. Medium");
+    Console.WriteLine("3. Hard");
+
+    if (int.TryParse(Console.ReadLine(), out int difficultyChoice))
+    {
+        switch (difficultyChoice)
+        {
+            case 1:
+                return 1;
+            case 2:
+                return 2;
+            case 3:
+                return 3;
+            default:
+                Console.WriteLine("Invalid choice. Defaulting to easy mode.");
+                return 1;
+        }
+    }
+    else
+    {
+        Console.WriteLine("The choice you selected was invalid. Defaulting to easy mode.");
+        return 1;
+    }
+}
+
+static int GenerateRandomNumber(int difficulty)
+{
+    Random random = new Random();
+
+    if (difficulty == 3)
+        return random.Next(1, 1001);
+    if (difficulty == 2)
+        return random.Next(1, 101);
+
+    return random.Next(1, 11);
 }
 
 static int CalculateResult(string operation, int randomNum, int randomNum2)
@@ -137,7 +186,7 @@ void ViewHistory()
     if (history.Count > 0)
     {
         foreach (GameResult result in history)
-            Console.WriteLine($"{result.GameType} - {result.Score}");
+            Console.WriteLine($"{result.GameType} - {result.Score} - {result.Difficulty} - {result.Time}");
     }
     else
         Console.WriteLine("No scores to display");
@@ -147,4 +196,6 @@ class GameResult
 {
     public string GameType { get; set; }
     public int Score { get; set; }
+    public int Difficulty { get; set; }
+    public TimeSpan Time { get; set; }
 }
