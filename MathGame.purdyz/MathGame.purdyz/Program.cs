@@ -6,6 +6,7 @@ Console.WriteLine($"Nice to meet you, {playerName}!");
 
 // Main Menu + Game Loop
 bool gameRunning = true;
+List<GameResult> history = new List<GameResult>();
 
 while (gameRunning)
 {
@@ -21,7 +22,8 @@ while (gameRunning)
             GameSelection();
             break;
         case "2":
-            Console.WriteLine("History available in a future update!");
+            foreach (GameResult result in history)
+                Console.WriteLine($"{result.GameType} - {result.Score}");
             break;
         case "3":
             Console.WriteLine("Thanks for playing!");
@@ -33,7 +35,7 @@ while (gameRunning)
     }
 
     // Choose a game
-    static void GameSelection()
+    void GameSelection()
     {
         Console.WriteLine("Enter the number of a game to play:");
         Console.WriteLine("1. Addition");
@@ -70,11 +72,12 @@ while (gameRunning)
     }
 
     // Ask questions
-    static void AskQuestions(char operation)
+    void AskQuestions(char operation)
     {
         Random random = new Random();
         int count = 1;
         int score = 0;
+        string gameType = string.Empty;
         int randomNum = random.Next(1, 11);
         int randomNum2 = random.Next(1, 11);
         int result = 0;
@@ -83,16 +86,26 @@ while (gameRunning)
         while (count < 6)
         {
             if (operation == '+')
+            {
                 result = randomNum + randomNum2;
-            if (operation == '-')
+                gameType = "Addition";
+            }
+            else if (operation == '-')
+            {
                 result = randomNum - randomNum2;
-            if (operation == '*')
+                gameType = "Subtraction";
+            }
+            else if (operation == '*')
+            {
                 result = randomNum * randomNum2;
-            if (operation == '/')
+                gameType = "Multiplication";
+            }
+            else if (operation == '/')
             {
                 product = randomNum * randomNum2;
                 result = product / randomNum2;
                 randomNum = product;
+                gameType = "Division";
             }
 
             Console.WriteLine($"Question {count}! What is {randomNum} {operation} {randomNum2}?");
@@ -117,10 +130,20 @@ while (gameRunning)
             randomNum2 = random.Next(1, 11);
         }
 
+        GameResult currentResult = new GameResult();
+        currentResult.GameType = gameType;
+        currentResult.Score = score;
+        history.Add(currentResult);
         Console.WriteLine($"Your final score is {score}!");
     }
 
     Console.WriteLine("Press any key to continue");
     Console.ReadLine();
     Console.Clear();
+}
+
+class GameResult
+{
+    public string GameType { get; set; }
+    public int Score { get; set; }
 }
