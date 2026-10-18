@@ -1,43 +1,53 @@
 ﻿using System.Diagnostics;
+using MathGame.purdyz;
 
-Console.WriteLine("Welcome to the Math Game!");
-Console.Write("What's your name? ");
-string playerName = Console.ReadLine();
-Console.WriteLine($"Nice to meet you, {playerName}!");
-Console.WriteLine();
-
+WelcomePlayer();
 bool gameRunning = true;
 List<GameResult> history = new List<GameResult>();
 Random random = new Random();
 
-while (gameRunning)
+MainGame();
+
+void WelcomePlayer()
 {
-    Console.WriteLine("Main Menu");
-    Console.WriteLine("1. Play a game");
-    Console.WriteLine("2. View History");
-    Console.WriteLine("3. Exit");
-    string menuChoice = Console.ReadLine();
+    Console.WriteLine("Welcome to the Math Game!");
+    Console.Write("What's your name? ");
+    string? playerName = Console.ReadLine();
+    Console.WriteLine($"Nice to meet you, {playerName}!");
+    Console.WriteLine();
+}
 
-    switch (menuChoice)
+void MainGame()
+{
+    while (gameRunning)
     {
-        case "1":
-            GameSelection();
-            break;
-        case "2":
-            ViewHistory();
-            break;
-        case "3":
-            Console.WriteLine("Thanks for playing!");
-            gameRunning = false;
-            break;
-        default:
-            Console.WriteLine("The choice you selected was invalid. Please enter 1 through 3 only.");
-            break;
-    }
+        Console.WriteLine("Main Menu");
+        Console.WriteLine("1. Play a game");
+        Console.WriteLine("2. View History");
+        Console.WriteLine("3. Exit");
+        string? menuChoice = Console.ReadLine();
 
-    Console.WriteLine("Press any key to return to main menu.");
-    Console.ReadLine();
-    Console.Clear();
+        switch (menuChoice)
+        {
+            case "1":
+                GameSelection();
+                break;
+            case "2":
+                ViewHistory();
+                break;
+            case "3":
+                Console.WriteLine("Thanks for playing!");
+                gameRunning = false;
+                break;
+            default:
+                Console.WriteLine("The choice you selected was invalid. Please enter 1 through 3 only.");
+                break;
+        }
+
+        Console.WriteLine("Press any key to return to main menu.");
+        Console.ReadLine();
+        Console.Clear();
+    }
 }
 
 void GameSelection()
@@ -87,13 +97,12 @@ void GameSelection()
 
 void PlayRound(string operation, char operand)
 {
-    int difficulty = ChooseDifficulty();
+    string difficulty = ChooseDifficulty();
     int roundNumber = 1;
     int maxRounds = 5;
     int score = 0;
     int randomNum;
     int randomNum2;
-    int product;
     int result;
     bool randomGame = operation == "Random" ? true : false;
     Stopwatch timer = new Stopwatch();
@@ -113,13 +122,13 @@ void PlayRound(string operation, char operand)
         }
 
         if (operation == "Division")
-            randomNum = CalculateResult("Multiplication", randomNum, randomNum2);
+            randomNum = Calculate("Multiplication", randomNum, randomNum2);
 
-        result = CalculateResult(operation, randomNum, randomNum2);
+        result = Calculate(operation, randomNum, randomNum2);
 
         Console.WriteLine($"Question {roundNumber}! What is {randomNum} {operand} {randomNum2}?");
         timer.Start();
-        string answer = Console.ReadLine();
+        string? answer = Console.ReadLine();
         Console.WriteLine($"Your answer is {answer}");
 
         if (int.TryParse(answer, out int validAnswer))
@@ -139,17 +148,11 @@ void PlayRound(string operation, char operand)
     }
 
     timer.Stop();
-
-    GameResult currentResult = new GameResult();
-    currentResult.GameType = randomGame ? "Random" : operation;
-    currentResult.Score = score;
-    currentResult.Difficulty = difficulty;
-    currentResult.Time = timer.Elapsed;
-    history.Add(currentResult);
-    Console.WriteLine($"Your final score is {score}! It took you {currentResult.Time}!");
+    RecordResults(randomGame, operation, score, difficulty, timer);
+    Console.WriteLine($"Your final score is {score}! It took you {timer.Elapsed.ToString(@"mm\:ss")}!");
 }
 
-static int ChooseDifficulty()
+static string ChooseDifficulty()
 {
     Console.WriteLine("Choose a difficulty level");
     Console.WriteLine("1. Easy");
@@ -161,34 +164,44 @@ static int ChooseDifficulty()
         switch (difficultyChoice)
         {
             case 1:
-                return 1;
+                return "Easy";
             case 2:
-                return 2;
+                return "Medium";
             case 3:
-                return 3;
+                return "Hard";
             default:
                 Console.WriteLine("Invalid choice. Defaulting to easy mode.");
-                return 1;
+                return "Easy";
         }
     }
     else
     {
         Console.WriteLine("The choice you selected was invalid. Defaulting to easy mode.");
-        return 1;
+        return "Easy";
     }
 }
 
-int GenerateRandomNumber(int difficulty)
+int GenerateRandomNumber(string difficulty)
 {
-    if (difficulty == 3)
+    if (difficulty.Equals("Hard"))
         return random.Next(1, 1001);
-    if (difficulty == 2)
+    if (difficulty.Equals("Medium"))
         return random.Next(1, 101);
 
     return random.Next(1, 11);
 }
 
-static int CalculateResult(string operation, int randomNum, int randomNum2)
+void RecordResults(bool randomGame, string operation, int score, string difficulty, Stopwatch timer)
+{
+    GameResult currentResult = new GameResult();
+    currentResult.GameType = randomGame ? "Random" : operation;
+    currentResult.Score = score;
+    currentResult.Difficulty = difficulty;
+    currentResult.Time = timer.Elapsed.ToString(@"mm\:ss");
+    history.Add(currentResult);
+}
+
+static int Calculate(string operation, int randomNum, int randomNum2)
 {
     if (operation == "Addition")
         return randomNum + randomNum2;
@@ -204,17 +217,10 @@ void ViewHistory()
 {
     if (history.Count > 0)
     {
+        Console.WriteLine($"{"Game Type", -15} {"Score", -6} {"Difficulty", -12} {"Time Elapsed", -12}");
         foreach (GameResult result in history)
-            Console.WriteLine($"{result.GameType} - {result.Score} - {result.Difficulty} - {result.Time}");
+            Console.WriteLine($"{result.GameType, -15} {result.Score, -6} {result.Difficulty, -12} {result.Time, -12}");
     }
     else
         Console.WriteLine("No scores to display");
-}
-
-class GameResult
-{
-    public string GameType { get; set; }
-    public int Score { get; set; }
-    public int Difficulty { get; set; }
-    public TimeSpan Time { get; set; }
 }
