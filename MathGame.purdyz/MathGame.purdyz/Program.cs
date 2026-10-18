@@ -45,6 +45,7 @@ void GameSelection()
     Console.WriteLine("2. Subtraction");
     Console.WriteLine("3. Multiplication");
     Console.WriteLine("4. Division");
+    Console.WriteLine("5. Random");
 
     if (int.TryParse(Console.ReadLine(), out int gameChoice))
     {
@@ -66,6 +67,10 @@ void GameSelection()
                 Console.WriteLine("Division selected!");
                 PlayRound("Division", '/');
                 break;
+            case 5:
+                Console.WriteLine("Random selected!");
+                PlayRound("Random", ' ');
+                break;
             default:
                 Console.WriteLine("Invalid choice");
                 break;
@@ -84,12 +89,23 @@ void PlayRound(string operation, char operand)
     int randomNum2;
     int product;
     int result;
+    bool randomGame = operation == "Random" ? true : false;
     Stopwatch timer = new Stopwatch();
 
     while (count < 6)
     {
         randomNum = GenerateRandomNumber(difficulty);
         randomNum2 = GenerateRandomNumber(difficulty);
+
+        if (randomGame)
+        {
+            string[] operationArray = new string[] { "Addition", "Subtraction", "Multiplication", "Division" };
+            char[] operandArray = new char[] { '+', '-', '*', '/' };
+            Random random = new Random();
+            int randomOperation = random.Next(0, 4);
+            operation = operationArray[randomOperation];
+            operand = operandArray[randomOperation];
+        }
 
         if (operation == "Division")
             randomNum = CalculateResult("Multiplication", randomNum, randomNum2);
@@ -120,7 +136,7 @@ void PlayRound(string operation, char operand)
     timer.Stop();
 
     GameResult currentResult = new GameResult();
-    currentResult.GameType = operation;
+    currentResult.GameType = randomGame ? "Random" : operation;
     currentResult.Score = score;
     currentResult.Difficulty = difficulty;
     currentResult.Time = timer.Elapsed;
