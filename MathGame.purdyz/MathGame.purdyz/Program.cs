@@ -4,9 +4,11 @@ Console.WriteLine("Welcome to the Math Game!");
 Console.Write("What's your name? ");
 string playerName = Console.ReadLine();
 Console.WriteLine($"Nice to meet you, {playerName}!");
+Console.WriteLine();
 
 bool gameRunning = true;
 List<GameResult> history = new List<GameResult>();
+Random random = new Random();
 
 while (gameRunning)
 {
@@ -33,7 +35,7 @@ while (gameRunning)
             break;
     }
 
-    Console.WriteLine("Press any key to continue");
+    Console.WriteLine("Press any key to return to main menu.");
     Console.ReadLine();
     Console.Clear();
 }
@@ -72,18 +74,22 @@ void GameSelection()
                 PlayRound("Random", ' ');
                 break;
             default:
-                Console.WriteLine("Invalid choice");
+                Console.WriteLine("Invalid choice.");
                 break;
         }
     }
     else
-        Console.WriteLine("The choice you selected was invalid. Please enter 1 through 4 only.");
+    {
+        Console.WriteLine("The choice you selected was invalid. Defaulting to random mode.");
+        PlayRound("Random", ' ');
+    }
 }
 
 void PlayRound(string operation, char operand)
 {
     int difficulty = ChooseDifficulty();
-    int count = 1;
+    int roundNumber = 1;
+    int maxRounds = 5;
     int score = 0;
     int randomNum;
     int randomNum2;
@@ -92,7 +98,7 @@ void PlayRound(string operation, char operand)
     bool randomGame = operation == "Random" ? true : false;
     Stopwatch timer = new Stopwatch();
 
-    while (count < 6)
+    while (roundNumber <= maxRounds)
     {
         randomNum = GenerateRandomNumber(difficulty);
         randomNum2 = GenerateRandomNumber(difficulty);
@@ -101,7 +107,6 @@ void PlayRound(string operation, char operand)
         {
             string[] operationArray = new string[] { "Addition", "Subtraction", "Multiplication", "Division" };
             char[] operandArray = new char[] { '+', '-', '*', '/' };
-            Random random = new Random();
             int randomOperation = random.Next(0, 4);
             operation = operationArray[randomOperation];
             operand = operandArray[randomOperation];
@@ -112,7 +117,7 @@ void PlayRound(string operation, char operand)
 
         result = CalculateResult(operation, randomNum, randomNum2);
 
-        Console.WriteLine($"Question {count}! What is {randomNum} {operand} {randomNum2}?");
+        Console.WriteLine($"Question {roundNumber}! What is {randomNum} {operand} {randomNum2}?");
         timer.Start();
         string answer = Console.ReadLine();
         Console.WriteLine($"Your answer is {answer}");
@@ -128,9 +133,9 @@ void PlayRound(string operation, char operand)
                 Console.WriteLine("That's the wrong answer.");
         }
         else
-            Console.WriteLine("The answer you entered was invalid. Please enter a whole number only.");
+            Console.WriteLine("The answer you entered was invalid. Please enter a whole number only. Marking as incorrect!");
 
-        count++;
+        roundNumber++;
     }
 
     timer.Stop();
@@ -173,10 +178,8 @@ static int ChooseDifficulty()
     }
 }
 
-static int GenerateRandomNumber(int difficulty)
+int GenerateRandomNumber(int difficulty)
 {
-    Random random = new Random();
-
     if (difficulty == 3)
         return random.Next(1, 1001);
     if (difficulty == 2)
